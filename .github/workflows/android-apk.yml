@@ -39,10 +39,60 @@ jobs:
 
       - name: Extract project
         run: unzip -o ugolki-android-project-cloud-build.zip -d .
-      - name: Show project configuration
+      
+      - name: Fix HTTPS WebView and Firebase
         run: |
-          find app/src/main/java -name "MainActivity.kt" -exec cat {} \;
-          cat app/build.gradle.kts
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("app/build.gradle.kts")
+          s = p.read_text()
+          if 'androidx.webkit:webkit' not in s:
+              s += '\ndependencies {\n    implementation("androidx.webkit:webkit:1.12.1")\n}\n'
+          p.write_text(s)
+
+          p = next(Path("app/src/main/java").rglob("MainActivity.kt"))
+          p.write_text("""package com.example.ugolki
+
+          import android.app.Activity
+          import android.os.Bundle
+          import android.webkit.WebView
+          import android.webkit.WebResourceRequest
+          import android.view.View
+          import androidx.webkit.WebViewAssetLoader
+          import androidx.webkit.WebViewClientCompat
+
+          class MainActivity : Activity() {
+              @Suppress("SetJavaScriptEnabled")
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or
+                      View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+
+                  val web = WebView(this)
+                  web.settings.javaScriptEnabled = true
+                  web.settings.domStorageEnabled = true
+                  web.settings.allowFileAccess = false
+
+                  val assetLoader = WebViewAssetLoader.Builder()
+                      .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+                      .build()
+
+                  web.webViewClient = object : WebViewClientCompat() {
+                      override fun shouldInterceptRequest(
+                          view: WebView,
+                          request: WebResourceRequest
+                      ) = assetLoader.shouldInterceptRequest(request.url)
+                  }
+
+                  web.setBackgroundColor(android.graphics.Color.rgb(31, 25, 20))
+                  setContentView(web)
+                  web.loadUrl("https://appassets.androidplatform.net/assets/index.html")
+              }
+          }
+          """)
+          PY
+
       - name: Fix internet permission and Firebase startup
         run: |
           python3 - <<'PY'
