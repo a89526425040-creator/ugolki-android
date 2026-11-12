@@ -39,7 +39,9 @@ jobs:
 
       - name: Extract project
         run: unzip -o ugolki-android-project-cloud-build.zip -d .
-
+      - name: Align Kotlin JVM target
+        run: |
+          sed -i '/^android {/a\    kotlinOptions { jvmTarget = "1.8" }' ugolki-android/app/build.gradle.kts
       - name: Build APK
         run: gradle --no-daemon -p ugolki-android assembleDebug
 
