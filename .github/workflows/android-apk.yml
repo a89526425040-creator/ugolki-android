@@ -65,6 +65,27 @@ jobs:
               raise SystemExit("Firebase block not found")
           p.write_text(s.replace(old, new, 1))
           PY
+      - name: Bundle Firebase SDK locally
+        run: |
+          mkdir -p app/src/main/assets/firebase
+          curl -fL https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js -o app/src/main/assets/firebase/firebase-app-compat.js
+          curl -fL https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js -o app/src/main/assets/firebase/firebase-auth-compat.js
+          curl -fL https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js -o app/src/main/assets/firebase/firebase-database-compat.js
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("app/src/main/assets/index.html")
+          s = p.read_text()
+          files = {
+              "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js": "firebase/firebase-app-compat.js",
+              "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js": "firebase/firebase-auth-compat.js",
+              "https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js": "firebase/firebase-database-compat.js"
+          }
+          for old, new in files.items():
+              if old not in s:
+                  raise SystemExit("Firebase script not found: " + old)
+              s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
       - name: Upload source ZIP
         uses: actions/upload-artifact@v4
         with:
