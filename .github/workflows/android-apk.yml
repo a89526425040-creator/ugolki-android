@@ -1,10 +1,12 @@
 
+
 name: Build Ugolki APK
 
 on:
   workflow_dispatch:
   push:
     paths:
+      - 'source-inspection/app/src/main/assets/index.html'
       - 'ugolki-android-project-cloud-build.zip'
       - '.github/workflows/android-apk.yml'
 
@@ -14,6 +16,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,20 +42,44 @@ jobs:
 
       - name: Extract project
         run: unzip -o ugolki-android-project-cloud-build.zip -d .
-      
-      - name: Fix HTTPS WebView and Firebase
+
+      - name: Install updated Supabase game
+        run: |
+          cp source-inspection/app/src/main/assets/index.html app/src/main/assets/index.html
+
+      - name: Configure WebView and Internet
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           p = Path("app/build.gradle.kts")
           s = p.read_text()
-          if 'androidx.webkit:webkit' not in s:
+          if "androidx.webkit:webkit" not in s:
               s += '\ndependencies {\n    implementation("androidx.webkit:webkit:1.12.1")\n}\n'
           p.write_text(s)
 
-          p = next(Path("app/src/main/java").rglob("MainActivity.kt"))
-          p.write_text("""package com.example.ugolki
+          manifest = Path("app/src/main/AndroidManifest.xml")
+          s = manifest.read_text()
+          if "android.permission.INTERNET" not in s:
+              s, count = re.subn(
+                  r'(<manifest\b[^>]*>)',
+                  r'\1\n    <uses-permission android:name="android.permission.INTERNET" />',
+                  s,
+                  count=1
+              )
+              if count == 0:
+                  raise SystemExit("Manifest tag not found")
+          manifest.write_text(s)
+
+          main = next(Path("app/src/main/java").rglob("MainActivity.kt"))
+          old = main.read_text()
+          match = re.search(r'^package\s+([\w.]+)', old, re.M)
+          if not match:
+              raise SystemExit("Kotlin package not found")
+          package = match.group(1)
+
+          main.write_text(f'''package {package}
 
           import android.app.Activity
           import android.os.Bundle
@@ -62,12 +89,15 @@ jobs:
           import androidx.webkit.WebViewAssetLoader
           import androidx.webkit.WebViewClientCompat
 
-          class MainActivity : Activity() {
+          class MainActivity : Activity() {{
               @Suppress("SetJavaScriptEnabled")
-              override fun onCreate(savedInstanceState: Bundle?) {
+              override fun onCreate(savedInstanceState: Bundle?) {{
                   super.onCreate(savedInstanceState)
-                  window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or
-                      View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+
+                  window.decorView.systemUiVisibility =
+                      View.SYSTEM_UI_FLAG_FULLSCREEN or
+                      View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                      View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
 
                   val web = WebView(this)
                   web.settings.javaScriptEnabled = true
@@ -75,80 +105,31 @@ jobs:
                   web.settings.allowFileAccess = false
 
                   val assetLoader = WebViewAssetLoader.Builder()
-                      .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+                      .addPathHandler(
+                          "/assets/",
+                          WebViewAssetLoader.AssetsPathHandler(this)
+                      )
                       .build()
 
-                  web.webViewClient = object : WebViewClientCompat() {
+                  web.webViewClient = object : WebViewClientCompat() {{
                       override fun shouldInterceptRequest(
                           view: WebView,
                           request: WebResourceRequest
                       ) = assetLoader.shouldInterceptRequest(request.url)
-                  }
+                  }}
 
                   web.setBackgroundColor(android.graphics.Color.rgb(31, 25, 20))
                   setContentView(web)
                   web.loadUrl("https://appassets.androidplatform.net/assets/index.html")
-              }
-          }
-          """)
+              }}
+          }}
+          ''')
           PY
 
-      - name: Fix internet permission and Firebase startup
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("app/src/main/AndroidManifest.xml")
-          s = p.read_text()
-          marker = '<manifest xmlns:android="http://schemas.android.com/apk/res/android>'
-          if "android.permission.INTERNET" not in s:
-              s = s.replace(marker, marker + '\n    <uses-permission android:name="android.permission.INTERNET" />', 1)
-          p.write_text(s)
-
-          p = Path("app/src/main/assets/index.html")
-          s = p.read_text()
-          old = """firebase.initializeApp(firebaseConfig);
-          firebase.auth().signInAnonymously().then(cred=>{authUser=cred.user;db=firebase.database();onlineStatus.textContent='Готово к игре онлайн';}).catch(err=>{onlineStatus.textContent='Ошибка подключения: '+err.message;});"""
-          new = """try {
-            if (typeof firebase === 'undefined') throw new Error('Firebase SDK не загрузился. Проверь интернет.');
-            firebase.initializeApp(firebaseConfig);
-            firebase.auth().signInAnonymously().then(cred=>{authUser=cred.user;db=firebase.database();onlineStatus.textContent='Готово к игре онлайн';}).catch(err=>{onlineStatus.textContent='Ошибка подключения: '+err.message;});
-          } catch(err) {
-            onlineStatus.textContent='Ошибка Firebase: '+err.message;
-          }"""
-          if old not in s:
-              raise SystemExit("Firebase block not found")
-          p.write_text(s.replace(old, new, 1))
-          PY
-      - name: Bundle Firebase SDK locally
-        run: |
-          mkdir -p app/src/main/assets/firebase
-          curl -fL https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js -o app/src/main/assets/firebase/firebase-app-compat.js
-          curl -fL https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js -o app/src/main/assets/firebase/firebase-auth-compat.js
-          curl -fL https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js -o app/src/main/assets/firebase/firebase-database-compat.js
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("app/src/main/assets/index.html")
-          s = p.read_text()
-          files = {
-              "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js": "firebase/firebase-app-compat.js",
-              "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js": "firebase/firebase-auth-compat.js",
-              "https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js": "firebase/firebase-database-compat.js"
-          }
-          for old, new in files.items():
-              if old not in s:
-                  raise SystemExit("Firebase script not found: " + old)
-              s = s.replace(old, new, 1)
-          p.write_text(s)
-          PY
-      - name: Upload source ZIP
-        uses: actions/upload-artifact@v4
-        with:
-          name: ugolki-source
-          path: ugolki-android-project-cloud-build.zip
-          retention-days: 7
       - name: Align Kotlin JVM target
         run: |
           sed -i '/^android {/a\    kotlinOptions { jvmTarget = "1.8" }' app/build.gradle.kts
+
       - name: Build APK
         run: gradle --no-daemon -p . assembleDebug
 
@@ -159,4 +140,3 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
-          
