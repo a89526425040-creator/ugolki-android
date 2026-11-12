@@ -39,6 +39,32 @@ jobs:
 
       - name: Extract project
         run: unzip -o ugolki-android-project-cloud-build.zip -d .
+              - name: Fix internet permission and Firebase startup
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("app/src/main/AndroidManifest.xml")
+          s = p.read_text()
+          marker = '<manifest xmlns:android="http://schemas.android.com/apk/res/android>'
+          if "android.permission.INTERNET" not in s:
+              s = s.replace(marker, marker + '\n    <uses-permission android:name="android.permission.INTERNET" />', 1)
+          p.write_text(s)
+
+          p = Path("app/src/main/assets/index.html")
+          s = p.read_text()
+          old = """firebase.initializeApp(firebaseConfig);
+          firebase.auth().signInAnonymously().then(cred=>{authUser=cred.user;db=firebase.database();onlineStatus.textContent='Готово к игре онлайн';}).catch(err=>{onlineStatus.textContent='Ошибка подключения: '+err.message;});"""
+          new = """try {
+            if (typeof firebase === 'undefined') throw new Error('Firebase SDK не загрузился. Проверь интернет.');
+            firebase.initializeApp(firebaseConfig);
+            firebase.auth().signInAnonymously().then(cred=>{authUser=cred.user;db=firebase.database();onlineStatus.textContent='Готово к игре онлайн';}).catch(err=>{onlineStatus.textContent='Ошибка подключения: '+err.message;});
+          } catch(err) {
+            onlineStatus.textContent='Ошибка Firebase: '+err.message;
+          }"""
+          if old not in s:
+              raise SystemExit("Firebase block not found")
+          p.write_text(s.replace(old, new, 1))
+          PY
       - name: Upload source ZIP
         uses: actions/upload-artifact@v4
         with:
