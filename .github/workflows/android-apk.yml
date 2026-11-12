@@ -39,6 +39,9 @@ jobs:
 
       - name: Extract project
         run: unzip -o ugolki-android-project-cloud-build.zip -d .
+      - name: Show MainActivity
+        run: |
+          find app/src/main/java -name "MainActivity.kt" -exec cat {} \;
       - name: Fix internet permission and Firebase startup
         run: |
           python3 - <<'PY'
