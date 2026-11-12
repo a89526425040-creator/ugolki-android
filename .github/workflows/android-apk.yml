@@ -47,15 +47,15 @@ jobs:
           retention-days: 7
       - name: Align Kotlin JVM target
         run: |
-          sed -i '/^android {/a\    kotlinOptions { jvmTarget = "1.8" }' ugolki-android/app/build.gradle.kts
+          sed -i '/^android {/a\    kotlinOptions { jvmTarget = "1.8" }' app/build.gradle.kts
       - name: Build APK
-        run: gradle --no-daemon -p ugolki-android assembleDebug
+        run: gradle --no-daemon -p . assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ugolki-debug-apk
-          path: ugolki-android/app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
           
