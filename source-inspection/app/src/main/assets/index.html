@@ -1,154 +1,429 @@
+
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#211a15"><title>Уголки</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#211a15">
+<title>Уголки</title>
 <style>
-:root{--bg:#211a15;--panel:#30251e;--cream:#e7d5b6;--wood:#a8784e;--light:#f1e6d2;--dark:#302d2a;--gold:#d6a85c;--green:#a6c27a}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:radial-gradient(ellipse at top,#453326 0,#211a15 65%);color:var(--light);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px}
-.app{width:min(100%,560px);display:flex;flex-direction:column;gap:14px}.head{text-align:center}.head h1{font-family:Georgia,serif;letter-spacing:3px;margin:0;font-size:clamp(28px,7vw,38px);color:#f3dfbd;text-shadow:0 2px 3px #000}.sub{font-size:12px;letter-spacing:1.5px;color:#c5a77d;margin-top:3px;text-transform:uppercase}
-.panel{background:linear-gradient(145deg,#3a2c22,#2a211b);border:1px solid #6d5038;border-radius:16px;padding:12px 14px;box-shadow:0 8px 22px #0005}.status{display:flex;align-items:center;justify-content:space-between;gap:8px}.player{display:flex;align-items:center;gap:8px;font-size:13px}.dot{width:17px;height:17px;border-radius:50%;border:2px solid #b9a58a;box-shadow:inset 0 2px 3px #fff8,0 2px 3px #0008}.dot.human{background:linear-gradient(145deg,#fff9e9,#bca98a)}.dot.ai{background:linear-gradient(145deg,#625e59,#171513)}.turn{font-size:12px;color:#e2c18c;text-align:right}.board-wrap{padding:10px;background:linear-gradient(135deg,#c79a68,#68452d 55%,#b38455);border:3px solid #4a3020;border-radius:12px;box-shadow:0 12px 25px #0008,inset 0 1px 2px #fff8}.board{display:grid;grid-template-columns:repeat(10,1fr);aspect-ratio:1/1;border:2px solid #4d3423;overflow:hidden;border-radius:3px;touch-action:manipulation}.cell{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;border:1px solid #6f4c32;background:#e4c99f}.cell:nth-child(20n+1),.cell:nth-child(20n+3),.cell:nth-child(20n+5),.cell:nth-child(20n+7),.cell:nth-child(20n+9),.cell:nth-child(20n+12),.cell:nth-child(20n+14),.cell:nth-child(20n+16),.cell:nth-child(20n+18),.cell:nth-child(20n+20){background:#b8895d}.cell.goal-human{box-shadow:inset 0 0 0 2px #f5e9d1;background:#d9c39f}.cell.goal-ai{box-shadow:inset 0 0 0 2px #654a36;background:#a77a55}.cell.selected{outline:3px solid #f5d16f;outline-offset:-4px;z-index:2}.cell.possible:after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:#6e9b55cc;border:2px solid #eff5d9;box-shadow:0 1px 4px #0008}.cell .piece{width:74%;height:74%;border-radius:50%;position:relative;z-index:1;box-shadow:inset 0 3px 4px #fff9,inset 0 -5px 7px #0006,0 3px 4px #0008;border:2px solid #79664d}.piece.human{background:radial-gradient(circle at 32% 25%,#fffef5,#e1d4b9 55%,#9e8a6a)}.piece.ai{background:radial-gradient(circle at 32% 25%,#817a70,#3d3935 55%,#141210);border-color:#211d19}.cell.selected .piece{filter:brightness(1.12)}
-.controls{display:flex;gap:10px}.btn{flex:1;border:1px solid #9b754e;border-radius:11px;padding:12px 10px;color:#f6e7cd;font-weight:700;background:linear-gradient(#705039,#4c3425);font-size:14px;box-shadow:0 3px 0 #2a1d15;cursor:pointer}.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #2a1d15}.hint{text-align:center;font-size:12px;color:#cbb99e;line-height:1.4}.moves{font-variant-numeric:tabular-nums;color:#f0d4a4;font-weight:700}.overlay{position:fixed;inset:0;background:#100c09c9;display:none;align-items:center;justify-content:center;padding:24px;z-index:10}.dialog{max-width:340px;width:100%;text-align:center;background:#382a20;border:1px solid #a17a50;border-radius:18px;padding:24px;box-shadow:0 15px 50px #000}.dialog h2{font-family:Georgia,serif;color:#f4d8a7;margin:0 0 8px;font-size:28px}.dialog p{color:#e0cfb6;margin:0 0 18px}
+:root{--bg:#211a15;--panel:#30251e;--light:#f1e6d2}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:radial-gradient(ellipse at top,#453326 0,#211a15 65%);color:var(--light);font-family:system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px}
+.app{width:min(100%,560px);display:flex;flex-direction:column;gap:14px}
+.head{text-align:center}
+.head h1{font-family:Georgia,serif;letter-spacing:3px;margin:0;font-size:clamp(28px,7vw,38px);color:#f3dfbd}
+.sub{font-size:12px;letter-spacing:1.5px;color:#c5a77d;margin-top:3px}
+.panel{background:linear-gradient(145deg,#3a2c22,#2a211b);border:1px solid #6d5038;border-radius:16px;padding:12px 14px;box-shadow:0 8px 22px #0005}
+.status{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.player{display:flex;align-items:center;gap:8px;font-size:13px}
+.dot{width:17px;height:17px;border-radius:50%;border:2px solid #b9a58a}
+.dot.human{background:linear-gradient(145deg,#fff9e9,#bca98a)}
+.dot.ai{background:linear-gradient(145deg,#625e59,#171513)}
+.turn{font-size:12px;color:#e2c18c;text-align:right}
+.board-wrap{padding:10px;background:linear-gradient(135deg,#c79a68,#68452d 55%,#b38455);border:3px solid #4a3020;border-radius:12px}
+.board{display:grid;grid-template-columns:repeat(10,1fr);aspect-ratio:1;border:2px solid #4d3423;overflow:hidden;touch-action:manipulation}
+.cell{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;border:1px solid #6f4c32;background:#e4c99f}
+.cell:nth-child(20n+1),.cell:nth-child(20n+3),.cell:nth-child(20n+5),.cell:nth-child(20n+7),.cell:nth-child(20n+9),.cell:nth-child(20n+12),.cell:nth-child(20n+14),.cell:nth-child(20n+16),.cell:nth-child(20n+18),.cell:nth-child(20n+20){background:#b8895d}
+.cell.goal-human{box-shadow:inset 0 0 0 2px #f5e9d1;background:#d9c39f}
+.cell.goal-ai{box-shadow:inset 0 0 0 2px #654a36;background:#a77a55}
+.cell.selected{outline:3px solid #f5d16f;outline-offset:-4px;z-index:2}
+.cell.possible:after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:#6e9b55cc;border:2px solid #eff5d9}
+.cell .piece{width:74%;height:74%;border-radius:50%;position:relative;z-index:1;box-shadow:inset 0 3px 4px #fff9,inset 0 -5px 7px #0006,0 3px 4px #0008;border:2px solid #79664d}
+.piece.human{background:radial-gradient(circle at 32% 25%,#fffef5,#e1d4b9 55%,#9e8a6a)}
+.piece.ai{background:radial-gradient(circle at 32% 25%,#817a70,#3d3935 55%,#141210);border-color:#211d19}
+.controls{display:flex;gap:10px}
+.btn{flex:1;border:1px solid #9b754e;border-radius:11px;padding:12px 10px;color:#f6e7cd;font-weight:700;background:linear-gradient(#705039,#4c3425);font-size:14px;box-shadow:0 3px 0 #2a1d15;cursor:pointer}
+.btn:active{transform:translateY(2px)}
+.hint{text-align:center;font-size:12px;color:#cbb99e;line-height:1.4}
+.moves{color:#f0d4a4;font-weight:700}
+.overlay{position:fixed;inset:0;background:#100c09c9;display:none;align-items:center;justify-content:center;padding:24px;z-index:10}
+.dialog{max-width:340px;width:100%;text-align:center;background:#382a20;border:1px solid #a17a50;border-radius:18px;padding:24px}
+.dialog h2{font-family:Georgia,serif;color:#f4d8a7;margin:0 0 8px;font-size:28px}
+.dialog p{color:#e0cfb6;margin:0 0 18px}
+#roomCode{width:100%;margin-top:10px;padding:12px;border-radius:9px;border:1px solid #9b754e;background:#211a15;color:#fff;text-align:center;font-size:18px;letter-spacing:4px;text-transform:uppercase}
 @media(min-width:520px){body{padding:24px}.panel{padding:14px 18px}.board-wrap{padding:13px}}
-</style></head>
-<body><main class="app">
-<header class="head"><h1>УГОЛКИ</h1><div class="sub">Классическая настольная игра</div></header>
-<section class="panel status"><div class="player"><span class="dot human"></span><span>Ты · 12 фишек</span></div><div class="turn" id="turn">Твой ход</div><div class="player"><span>Компьютер · 12</span><span class="dot ai"></span></div></section>
-<div class="board-wrap"><div class="board" id="board" aria-label="Игровая доска 10 на 10"></div></div>
-<section class="panel status"><div>Ходы: <span class="moves" id="moves">0</span></div><div class="turn" id="message">Выбери свою фишку</div></section>
-<div class="controls"><button class="btn" id="new">Новая игра</button><button class="btn" id="rules">Правила</button></div>
-<section class="panel" id="onlinePanel">
-  <div style="font-weight:700;text-align:center;margin-bottom:9px">Игра по интернету</div>
-  <div class="controls"><button class="btn" id="createRoom">Создать комнату</button><button class="btn" id="joinRoom">Войти по коду</button></div>
-  <input id="roomCode" autocomplete="off" maxlength="6" placeholder="КОД КОМНАТЫ" style="width:100%;margin-top:10px;padding:12px;border-radius:9px;border:1px solid #9b754e;background:#211a15;color:#fff;text-align:center;font-size:18px;letter-spacing:4px;text-transform:uppercase">
-  <div class="hint" id="onlineStatus" style="margin-top:8px">Создай комнату и отправь код другу</div>
-  <button class="btn" id="leaveRoom" style="display:none;width:100%;margin-top:9px">Выйти из комнаты</button>
+</style>
+</head>
+<body>
+<main class="app">
+<header class="head">
+<h1>УГОЛКИ</h1>
+<div class="sub">Классическая настольная игра</div>
+</header>
+
+<section class="panel status">
+<div class="player"><span class="dot human"></span><span id="leftPlayer">Ты · 12 фишек</span></div>
+<div class="turn" id="turn">Твой ход</div>
+<div class="player"><span id="rightPlayer">Компьютер · 12</span><span class="dot ai"></span></div>
 </section>
+
+<div class="board-wrap"><div class="board" id="board"></div></div>
+
+<section class="panel status">
+<div>Ходы: <span class="moves" id="moves">0</span></div>
+<div class="turn" id="message">Выбери свою фишку</div>
+</section>
+
+<div class="controls">
+<button class="btn" id="new">Новая игра</button>
+<button class="btn" id="rules">Правила</button>
+</div>
+
+<section class="panel">
+<div style="font-weight:700;text-align:center;margin-bottom:9px">Игра по интернету</div>
+<div class="controls">
+<button class="btn" id="createRoom">Создать комнату</button>
+<button class="btn" id="joinRoom">Войти по коду</button>
+</div>
+<input id="roomCode" autocomplete="off" maxlength="6" placeholder="КОД КОМНАТЫ">
+<div class="hint" id="onlineStatus" style="margin-top:8px">Подключение к Supabase…</div>
+<button class="btn" id="leaveRoom" style="display:none;width:100%;margin-top:9px">Выйти из комнаты</button>
+</section>
+
 <div class="hint">Ход на соседнюю клетку или прыжок через любую фишку.<br>Прыгать можно цепочкой. Только по прямым направлениям.</div>
 </main>
-<div class="overlay" id="overlay"><div class="dialog"><h2 id="resultTitle">Победа!</h2><p id="resultText"></p><button class="btn" id="again">Сыграть ещё</button></div></div>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<div class="overlay" id="overlay">
+<div class="dialog">
+<h2 id="resultTitle">Победа!</h2>
+<p id="resultText"></p>
+<button class="btn" id="again">Сыграть ещё</button>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (()=>{
-const firebaseConfig = {
-  apiKey: "AIzaSyB7KEKQVrX3H1hsRElowrEHicQ3RUZtKHM",
-  authDomain: "ugolki-online-cb286.firebaseapp.com",
-  databaseURL: "https://ugolki-online-cb286-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "ugolki-online-cb286",
-  storageBucket: "ugolki-online-cb286.firebasestorage.app",
-  messagingSenderId: "866408901732",
-  appId: "1:866408901732:web:d11af5fa74fa817764c371"
-};
-let db=null, authUser=null, roomRef=null, roomListener=null;
-let onlineMode=false, onlineSide=0, roomCode="";
-const onlineStatus=document.getElementById('onlineStatus');
-firebase.initializeApp(firebaseConfig);
-firebase.auth().signInAnonymously().then(cred=>{authUser=cred.user;db=firebase.database();onlineStatus.textContent='Готово к игре онлайн';}).catch(err=>{onlineStatus.textContent='Ошибка подключения: '+err.message;});
+"use strict";
 
-const N=10, HUMAN=1, AI=2, boardEl=document.getElementById('board');
-let state, selected=-1, targets=new Set(), turn=HUMAN, moveCount=0, busy=false, gameOver=false;
-const myPiece=()=>onlineMode?onlineSide:HUMAN;
-const dirs=[[-1,0],[1,0],[0,-1],[0,1]], idx=(r,c)=>r*N+c, rc=i=>[Math.floor(i/N),i%N], inside=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
+const SUPABASE_URL="https://vbjemxtsnqjvpvtitvwh.supabase.co";
+const SUPABASE_KEY="sb_publishable_D4Gcelo7m6086I38vlDEeg_yU-IMNwb";
+
+const onlineStatus=document.getElementById("onlineStatus");
+let sb=null,authUser=null,roomId=null,pollTimer=null;
+let onlineMode=false,onlineSide=0,roomCode="";
+
+function status(msg){onlineStatus.textContent=msg;}
+
+async function connect(){
+ try{
+  if(!window.supabase)throw new Error("Библиотека Supabase не загрузилась");
+  sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  const {data,error}=await sb.auth.signInAnonymously();
+  if(error)throw error;
+  authUser=data.user;
+  status("Подключение готово. Можно играть онлайн.");
+ }catch(e){
+  status("Ошибка Supabase: "+e.message);
+ }
+}
+
+const N=10,HUMAN=1,AI=2;
+const boardEl=document.getElementById("board");
+let state,selected=-1,targets=new Set(),turn=HUMAN;
+let moveCount=0,busy=false,gameOver=false;
+
+const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
+const idx=(r,c)=>r*N+c;
+const rc=i=>[Math.floor(i/N),i%N];
+const inside=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
+
 const humanGoal=i=>{const [r,c]=rc(i);return r<3&&c>=6;};
 const aiGoal=i=>{const [r,c]=rc(i);return r>=7&&c<4;};
 const inGoal=(i,side)=>side===HUMAN?humanGoal(i):aiGoal(i);
-function initial(){let s=Array(100).fill(0);for(let r=0;r<3;r++)for(let c=6;c<10;c++)s[idx(r,c)]=AI;for(let r=7;r<10;r++)for(let c=0;c<4;c++)s[idx(r,c)]=HUMAN;return s;}
-function render(){boardEl.innerHTML='';for(let i=0;i<100;i++){const cell=document.createElement('button');cell.type='button';cell.className='cell';cell.setAttribute('aria-label',`Ряд ${Math.floor(i/10)+1}, столбец ${i%10+1}`);if(humanGoal(i))cell.classList.add('goal-human');if(aiGoal(i))cell.classList.add('goal-ai');if(i===selected)cell.classList.add('selected');if(targets.has(i))cell.classList.add('possible');if(state[i]){const p=document.createElement('span');p.className='piece '+(state[i]===HUMAN?'human':'ai');cell.appendChild(p);}cell.addEventListener('click',()=>tap(i));boardEl.appendChild(cell);}document.getElementById('moves').textContent=moveCount;document.getElementById('turn').textContent=gameOver?'Игра окончена':busy?'Ожидание…':onlineMode?(turn===onlineSide?'Твой ход':'Ход соперника'):(turn===HUMAN?'Твой ход':'Ход компьютера');}
-function jumpLandings(s,start,side){let seen=new Set([start]),q=[start];while(q.length){let at=q.shift(),[r,c]=rc(at);for(const [dr,dc] of dirs){let mr=r+dr,mc=c+dc,lr=r+2*dr,lc=c+2*dc;if(inside(lr,lc)&&inside(mr,mc)&&s[idx(mr,mc)]!==0&&s[idx(lr,lc)]===0){let land=idx(lr,lc);if(!seen.has(land)){seen.add(land);q.push(land);}}}}seen.delete(start);return seen;}
-function legal(s,from,side){let out=new Set(),[r,c]=rc(from);for(const [dr,dc] of dirs){let nr=r+dr,nc=c+dc;if(inside(nr,nc)&&s[idx(nr,nc)]===0)out.add(idx(nr,nc));}for(const x of jumpLandings(s,from,side))out.add(x);return out;}
-function allMoves(s,side){let out=[];for(let i=0;i<100;i++)if(s[i]===side)for(const to of legal(s,i,side))out.push([i,to]);return out;}
-function apply(s,m,side){let n=s.slice();n[m[1]]=side;n[m[0]]=0;return n;}
-function won(s,side){for(let i=0;i<100;i++)if(s[i]===side&&!inGoal(i,side===HUMAN?AI:HUMAN))return false;return true;}
-// Greedy one-reply search using total Manhattan distance to the nearest target cell.
-function distScore(s,side){let goals=[];for(let i=0;i<100;i++)if(inGoal(i,side))goals.push(i);let total=0;for(let i=0;i<100;i++)if(s[i]===side){let [r,c]=rc(i),best=99;for(const g of goals){let [gr,gc]=rc(g);best=Math.min(best,Math.abs(r-gr)+Math.abs(c-gc));}total+=best;}return total;}
-function evaluate(s){return distScore(s,HUMAN)-distScore(s,AI);}
-function chooseAI(){let ms=allMoves(state,AI);if(!ms.length){finish(HUMAN);return null;}let scored=ms.map(m=>({m,s:apply(state,m,AI)}));scored.sort((a,b)=>evaluate(b.s)-evaluate(a.s));let shortlist=scored.slice(0,Math.min(18,scored.length));let best=null,bestVal=-Infinity;for(const cand of shortlist){if(won(cand.s,AI))return cand.m;let replies=allMoves(cand.s,HUMAN),worst=evaluate(cand.s);for(const rep of replies){let after=apply(cand.s,rep,HUMAN);worst=Math.min(worst,evaluate(after));if(worst<bestVal-1000)break;}if(worst>bestVal){bestVal=worst;best=cand.m;}}return best||scored[0].m;}
-function tap(i){
- if(busy||gameOver||turn!==myPiece())return;
- if(selected>=0&&targets.has(i)){
-   const from=selected; selected=-1; targets.clear();
-   if(onlineMode){ onlineMove(from,i); return; }
-   state=apply(state,[from,i],HUMAN);moveCount++;
-   if(won(state,HUMAN)){render();finish(HUMAN);return;}
-   turn=AI;busy=true;render();setTimeout(aiTurn,0);return;
+
+function initial(){
+ const s=Array(100).fill(0);
+ for(let r=0;r<3;r++)for(let c=6;c<10;c++)s[idx(r,c)]=AI;
+ for(let r=7;r<10;r++)for(let c=0;c<4;c++)s[idx(r,c)]=HUMAN;
+ return s;
+}
+
+function render(){
+ boardEl.innerHTML="";
+ for(let i=0;i<100;i++){
+  const cell=document.createElement("button");
+  cell.type="button";cell.className="cell";
+  if(humanGoal(i))cell.classList.add("goal-human");
+  if(aiGoal(i))cell.classList.add("goal-ai");
+  if(i===selected)cell.classList.add("selected");
+  if(targets.has(i))cell.classList.add("possible");
+  if(state[i]){
+   const p=document.createElement("span");
+   p.className="piece "+(state[i]===HUMAN?"human":"ai");
+   cell.appendChild(p);
+  }
+  cell.addEventListener("click",()=>tap(i));
+  boardEl.appendChild(cell);
  }
- if(state[i]===myPiece()){selected=i;targets=legal(state,i,myPiece());document.getElementById('message').textContent=targets.size?'Выбери подсвеченную клетку':'Нет доступных ходов';render();return;}
- selected=-1;targets.clear();document.getElementById('message').textContent='Выбери свою фишку';render();
+ document.getElementById("moves").textContent=moveCount;
+ document.getElementById("turn").textContent=gameOver?"Игра окончена":busy?"Ожидание…":onlineMode?(turn===onlineSide?"Твой ход":"Ход соперника"):(turn===HUMAN?"Твой ход":"Ход компьютера");
 }
-function aiTurn(){if(gameOver)return;const m=chooseAI();if(!m){busy=false;return;}state=apply(state,m,AI);moveCount++;busy=false;if(won(state,AI)){turn=AI;render();finish(AI);return;}turn=HUMAN;document.getElementById('message').textContent='Выбери свою фишку';render();}
-function finish(side){gameOver=true;busy=false;document.getElementById('resultTitle').textContent=onlineMode?(side===onlineSide?'Ты победил!':'Соперник победил'):(side===HUMAN?'Ты победил!':'Компьютер победил');document.getElementById('resultText').textContent=onlineMode?'Все 12 фишек добрались до противоположного уголка.':'Все 12 фишек добрались до противоположного уголка. Попробуешь ещё раз?';document.getElementById('overlay').style.display='flex';render();}
-function setOnlineStatus(msg){onlineStatus.textContent=msg;}
-function randomCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=chars[Math.floor(Math.random()*chars.length)];return s;}
+
+function jumpLandings(s,start){
+ const seen=new Set([start]),q=[start];
+ while(q.length){
+  const at=q.shift(),[r,c]=rc(at);
+  for(const [dr,dc] of dirs){
+   const mr=r+dr,mc=c+dc,lr=r+2*dr,lc=c+2*dc;
+   if(inside(lr,lc)&&inside(mr,mc)&&s[idx(mr,mc)]!==0&&s[idx(lr,lc)]===0){
+    const land=idx(lr,lc);
+    if(!seen.has(land)){seen.add(land);q.push(land);}
+   }
+  }
+ }
+ seen.delete(start);
+ return seen;
+}
+
+function legal(s,from){
+ const out=new Set(),[r,c]=rc(from);
+ for(const [dr,dc] of dirs){
+  const nr=r+dr,nc=c+dc;
+  if(inside(nr,nc)&&s[idx(nr,nc)]===0)out.add(idx(nr,nc));
+ }
+ for(const x of jumpLandings(s,from))out.add(x);
+ return out;
+}
+
+function allMoves(s,side){
+ const out=[];
+ for(let i=0;i<100;i++)if(s[i]===side)
+  for(const to of legal(s,i))out.push([i,to]);
+ return out;
+}
+
+function apply(s,m,side){
+ const n=s.slice();n[m[1]]=side;n[m[0]]=0;return n;
+}
+
+function won(s,side){
+ for(let i=0;i<100;i++)
+  if(s[i]===side&&!inGoal(i,side===HUMAN?AI:HUMAN))return false;
+ return true;
+}
+
+function distScore(s,side){
+ const goals=[];
+ for(let i=0;i<100;i++)if(inGoal(i,side))goals.push(i);
+ let total=0;
+ for(let i=0;i<100;i++)if(s[i]===side){
+  const [r,c]=rc(i);let best=99;
+  for(const g of goals){
+   const [gr,gc]=rc(g);
+   best=Math.min(best,Math.abs(r-gr)+Math.abs(c-gc));
+  }
+  total+=best;
+ }
+ return total;
+}
+
+function evaluate(s){return distScore(s,HUMAN)-distScore(s,AI);}
+
+function chooseAI(){
+ const ms=allMoves(state,AI);
+ if(!ms.length){finish(HUMAN);return null;}
+ const scored=ms.map(m=>({m,s:apply(state,m,AI)}));
+ scored.sort((a,b)=>evaluate(b.s)-evaluate(a.s));
+ const shortlist=scored.slice(0,Math.min(18,scored.length));
+ let best=null,bestVal=-Infinity;
+ for(const cand of shortlist){
+  if(won(cand.s,AI))return cand.m;
+  const replies=allMoves(cand.s,HUMAN);
+  let worst=evaluate(cand.s);
+  for(const rep of replies){
+   const after=apply(cand.s,rep,HUMAN);
+   worst=Math.min(worst,evaluate(after));
+   if(worst<bestVal-1000)break;
+  }
+  if(worst>bestVal){bestVal=worst;best=cand.m;}
+ }
+ return best||scored[0].m;
+}
+
+function tap(i){
+ if(busy||gameOver||turn!==(onlineMode?onlineSide:HUMAN))return;
+ if(selected>=0&&targets.has(i)){
+  const from=selected;selected=-1;targets.clear();
+  if(onlineMode){onlineMove(from,i);return;}
+  state=apply(state,[from,i],HUMAN);moveCount++;
+  if(won(state,HUMAN)){render();finish(HUMAN);return;}
+  turn=AI;busy=true;render();setTimeout(aiTurn,0);return;
+ }
+ if(state[i]===(onlineMode?onlineSide:HUMAN)){
+  selected=i;targets=legal(state,i);
+  document.getElementById("message").textContent=targets.size?"Выбери подсвеченную клетку":"Нет доступных ходов";
+  render();return;
+ }
+ selected=-1;targets.clear();
+ document.getElementById("message").textContent="Выбери свою фишку";
+ render();
+}
+
+function aiTurn(){
+ if(gameOver)return;
+ const m=chooseAI();
+ if(!m){busy=false;return;}
+ state=apply(state,m,AI);moveCount++;busy=false;
+ if(won(state,AI)){turn=AI;render();finish(AI);return;}
+ turn=HUMAN;
+ document.getElementById("message").textContent="Выбери свою фишку";
+ render();
+}
+
+function finish(side){
+ gameOver=true;busy=false;
+ document.getElementById("resultTitle").textContent=onlineMode?(side===onlineSide?"Ты победил!":"Соперник победил"):(side===HUMAN?"Ты победил!":"Компьютер победил");
+ document.getElementById("resultText").textContent="Все 12 фишек добрались до противоположного уголка.";
+ document.getElementById("again").textContent="Сыграть ещё";
+ document.getElementById("overlay").style.display="flex";
+ render();
+}
+
+function randomCode(){
+ const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+ let s="";
+ for(let i=0;i<6;i++)s+=chars[Math.floor(Math.random()*chars.length)];
+ return s;
+}
+
 async function createOnlineRoom(){
- if(!authUser||!db){setOnlineStatus('Подключение к Firebase… попробуй через несколько секунд');return;}
+ if(!sb||!authUser){status("Подключение к Supabase ещё не готово.");return;}
  try{
-  let code=randomCode(), ref=db.ref('rooms/'+code), exists=(await ref.get()).exists();
-  while(exists){code=randomCode();ref=db.ref('rooms/'+code);exists=(await ref.get()).exists();}
-  await ref.set({host:authUser.uid,guest:null,board:initial(),turn:HUMAN,moveCount:0,gameOver:false,createdAt:firebase.database.ServerValue.TIMESTAMP});
-  document.getElementById('roomCode').value=code;joinRoomState(code,1,ref);
-  setOnlineStatus('Комната создана. Отправь другу код '+code);
- }catch(e){setOnlineStatus('Не удалось создать комнату: '+e.message);}
+  status("Создаём комнату…");
+  const code=randomCode();
+  const game_state={board:initial(),turn:HUMAN,moveCount:0,gameOver:false};
+  const {data,error}=await sb.from("rooms").insert({
+   code,host_id:authUser.id,guest_id:null,
+   game_state,status:"waiting"
+  }).select("id").single();
+  if(error)throw error;
+  document.getElementById("roomCode").value=code;
+  joinRoomState(code,1,data.id);
+  status("Комната создана! Отправь другу код "+code);
+ }catch(e){status("Ошибка создания комнаты: "+e.message);}
 }
+
 async function joinOnlineRoom(){
- if(!authUser||!db){setOnlineStatus('Подключение к Firebase… попробуй через несколько секунд');return;}
- const code=document.getElementById('roomCode').value.trim().toUpperCase();
- if(!/^[A-HJ-NP-Z2-9]{6}$/.test(code)){setOnlineStatus('Введи шестизначный код комнаты');return;}
+ if(!sb||!authUser){status("Подключение к Supabase ещё не готово.");return;}
+ const code=document.getElementById("roomCode").value.trim().toUpperCase();
+ if(!/^[A-HJ-NP-Z2-9]{6}$/.test(code)){status("Введи шестизначный код.");return;}
  try{
-  const ref=db.ref('rooms/'+code);let joined=false;
-  const result=await ref.transaction(room=>{
-   if(!room||room.gameOver||room.guest&&room.guest!==authUser.uid||room.host===authUser.uid)return;
-   room.guest=authUser.uid;joined=true;return room;
-  });
-  if(!result.committed){setOnlineStatus('Комната не найдена или уже занята');return;}
-  joinRoomState(code,2,ref);setOnlineStatus('Ты в комнате '+code+'. Ожидай ход соперника или начинай, когда твой ход.');
- }catch(e){setOnlineStatus('Не удалось войти: '+e.message);}
+  status("Ищем комнату…");
+  const {data:room,error}=await sb.from("rooms").select("id,host_id,guest_id,status").eq("code",code).maybeSingle();
+  if(error)throw error;
+  if(!room){status("Комната не найдена.");return;}
+  if(room.host_id===authUser.id){status("Это твоя комната. Друг должен войти с другого устройства.");return;}
+  if(room.guest_id&&room.guest_id!==authUser.id){status("Комната уже занята.");return;}
+  if(room.status==="finished"){status("Игра уже завершена.");return;}
+  if(!room.guest_id){
+   const {data:joined,error:joinError}=await sb.from("rooms").update({guest_id:authUser.id,status:"playing"}).eq("id",room.id).is("guest_id",null).select("id");
+   if(joinError)throw joinError;
+   if(!joined||!joined.length){
+    const {data:check,error:checkError}=await sb.from("rooms").select("guest_id").eq("id",room.id).single();
+    if(checkError)throw checkError;
+    if(check.guest_id!==authUser.id)throw new Error("Комната уже занята другим игроком.");
+   }
+  }
+  joinRoomState(code,2,room.id);
+  status("Ты подключился к комнате "+code);
+ }catch(e){status("Ошибка входа: "+e.message);}
 }
-function joinRoomState(code,side,ref){
- if(roomRef&&roomListener)roomRef.off('value',roomListener);
- onlineMode=true;onlineSide=side;roomCode=code;roomRef=ref;
- roomListener=snap=>{
-  const room=snap.val();if(!room){setOnlineStatus('Комната закрыта');leaveOnlineRoom();return;}
-  state=room.board||initial();turn=room.turn||HUMAN;moveCount=room.moveCount||0;gameOver=!!room.gameOver;
+
+function joinRoomState(code,side,id){
+ if(pollTimer)clearInterval(pollTimer);
+ onlineMode=true;onlineSide=side;roomCode=code;roomId=id;
+ document.getElementById("leaveRoom").style.display="block";
+ document.getElementById("new").textContent="Новая игра с компьютером";
+ document.getElementById("leftPlayer").textContent=side===1?"Ты · 12 фишек":"Соперник · 12";
+ document.getElementById("rightPlayer").textContent=side===2?"Ты · 12 фишек":"Соперник · 12";
+ pollRoom();
+ pollTimer=setInterval(pollRoom,1200);
+}
+
+async function pollRoom(){
+ if(!sb||!roomId)return;
+ try{
+  const {data:room,error}=await sb.from("rooms").select("host_id,guest_id,game_state,status").eq("id",roomId).single();
+  if(error)throw error;
+  if(!room){status("Комната не найдена.");return;}
+  const gs=room.game_state||{};
+  state=Array.isArray(gs.board)?gs.board:initial();
+  turn=Number(gs.turn)||HUMAN;
+  moveCount=Number(gs.moveCount)||0;
+  gameOver=!!gs.gameOver;
   selected=-1;targets.clear();busy=false;
-  document.querySelector('.status .player:first-child span:last-child').textContent=side===1?'Ты · 12 фишек':'Соперник · 12';
-  document.querySelector('.status .player:last-child span:first-child').textContent=side===2?'Ты · 12 фишек':'Соперник · 12';
-  setOnlineStatus('Комната '+code+' · '+(room.guest?'Соперник подключился':'Ожидаем второго игрока'));
-  document.getElementById('leaveRoom').style.display='block';
-  document.getElementById('new').textContent='Новая игра с компьютером';
+  status("Комната "+roomCode+" · "+(room.guest_id?"Оба игрока подключены":"Ожидаем второго игрока"));
   render();
-  if(gameOver)finish(room.winner|| (turn===HUMAN?AI:HUMAN));
- };
- ref.on('value',roomListener);
+  if(gameOver&&document.getElementById("overlay").style.display!=="flex"){
+   finish(gs.winner||(turn===HUMAN?AI:HUMAN));
+  }
+ }catch(e){status("Ошибка обновления: "+e.message);}
 }
+
 async function onlineMove(from,to){
- if(!roomRef||!onlineMode)return;
+ if(!sb||!roomId)return;
  try{
-  const result=await roomRef.transaction(room=>{
-   if(!room||!room.guest||room.gameOver||room.turn!==onlineSide||room.board[from]!==onlineSide||room.board[to]!==0)return;
-   const current=room.board.slice();if(!legal(current,from,onlineSide).has(to))return;
-   const next=apply(current,[from,to],onlineSide), ended=won(next,onlineSide);
-   room.board=next;room.turn=onlineSide===HUMAN?AI:HUMAN;room.moveCount=(room.moveCount||0)+1;room.gameOver=ended;if(ended)room.winner=onlineSide;return room;
-  });
-  if(!result.committed)setOnlineStatus('Ход не принят. Проверь, чей сейчас ход.');
- }catch(e){setOnlineStatus('Ошибка отправки хода: '+e.message);}
+  busy=true;render();
+  const {data:room,error}=await sb.from("rooms").select("game_state,guest_id").eq("id",roomId).single();
+  if(error)throw error;
+  if(!room.guest_id)throw new Error("Ожидаем второго игрока.");
+  const gs=room.game_state||{},current=gs.board||[];
+  if(Number(gs.turn)!==onlineSide)throw new Error("Сейчас ход соперника.");
+  if(current[from]!==onlineSide||current[to]!==0||!legal(current,from).has(to))throw new Error("Недопустимый ход.");
+  const next=apply(current,[from,to],onlineSide);
+  const ended=won(next,onlineSide);
+  const nextState={...gs,board:next,turn:onlineSide===HUMAN?AI:HUMAN,moveCount:(Number(gs.moveCount)||0)+1,gameOver:ended};
+  if(ended)nextState.winner=onlineSide;
+  let query=sb.from("rooms").update({game_state:nextState,status:ended?"finished":"playing"}).eq("id",roomId).filter("game_state->>turn","eq",String(gs.turn));
+  if(onlineSide===HUMAN)query=query.eq("host_id",authUser.id);
+  else query=query.eq("guest_id",authUser.id);
+  const {data:updated,error:updateError}=await query.select("id");
+  if(updateError)throw updateError;
+  if(!updated||!updated.length)throw new Error("Ход не принят. Возможно, соперник уже сделал ход.");
+  state=next;turn=nextState.turn;moveCount=nextState.moveCount;busy=false;
+  render();
+  if(ended)finish(onlineSide);
+ }catch(e){busy=false;status("Ошибка хода: "+e.message);render();}
 }
+
 function leaveOnlineRoom(){
- if(roomRef&&roomListener)roomRef.off('value',roomListener);
- roomRef=null;roomListener=null;onlineMode=false;onlineSide=0;roomCode='';
- document.getElementById('leaveRoom').style.display='none';
- document.getElementById('new').textContent='Новая игра';
- document.querySelector('.status .player:first-child span:last-child').textContent='Ты · 12 фишек';
- document.querySelector('.status .player:last-child span:first-child').textContent='Компьютер · 12';
- setOnlineStatus('Создай комнату и отправь код другу');reset();
+ if(pollTimer)clearInterval(pollTimer);
+ pollTimer=null;roomId=null;onlineMode=false;onlineSide=0;roomCode="";
+ document.getElementById("leaveRoom").style.display="none";
+ document.getElementById("new").textContent="Новая игра";
+ document.getElementById("leftPlayer").textContent="Ты · 12 фишек";
+ document.getElementById("rightPlayer").textContent="Компьютер · 12";
+ status("Создай комнату и отправь другу код.");
+ reset();
 }
-document.getElementById('createRoom').onclick=createOnlineRoom;
-document.getElementById('joinRoom').onclick=joinOnlineRoom;
-document.getElementById('leaveRoom').onclick=leaveOnlineRoom;
-function reset(){if(onlineMode){leaveOnlineRoom();return;}state=initial();selected=-1;targets.clear();turn=HUMAN;moveCount=0;busy=false;gameOver=false;document.getElementById('overlay').style.display='none';document.getElementById('message').textContent='Выбери свою фишку';render();}
-document.getElementById('new').onclick=reset;document.getElementById('again').onclick=reset;document.getElementById('rules').onclick=()=>{document.getElementById('resultTitle').textContent='Правила';document.getElementById('resultText').textContent='Перемести все 12 светлых фишек из нижнего левого уголка в верхний правый. За ход фишка может перейти на соседнюю свободную клетку или перепрыгнуть через любую соседнюю фишку на свободную клетку за ней. Разрешены цепочки прыжков, только по горизонтали и вертикали.';document.getElementById('again').textContent='Понятно';document.getElementById('overlay').style.display='flex';};
-document.getElementById('again').addEventListener('click',()=>{document.getElementById('again').textContent='Сыграть ещё';});
+
+function reset(){
+ if(onlineMode){leaveOnlineRoom();return;}
+ state=initial();selected=-1;targets.clear();turn=HUMAN;
+ moveCount=0;busy=false;gameOver=false;
+ document.getElementById("overlay").style.display="none";
+ document.getElementById("message").textContent="Выбери свою фишку";
+ render();
+}
+
+document.getElementById("createRoom").onclick=createOnlineRoom;
+document.getElementById("joinRoom").onclick=joinOnlineRoom;
+document.getElementById("leaveRoom").onclick=leaveOnlineRoom;
+document.getElementById("new").onclick=reset;
+document.getElementById("again").onclick=reset;
+
+document.getElementById("rules").onclick=()=>{
+ document.getElementById("resultTitle").textContent="Правила";
+ document.getElementById("resultText").textContent="Перемести все 12 светлых фишек из нижнего левого уголка в верхний правый. За ход фишка может перейти на соседнюю свободную клетку или перепрыгнуть через любую соседнюю фишку на свободную клетку за ней. Разрешены цепочки прыжков, только по горизонтали и вертикали.";
+ document.getElementById("again").textContent="Понятно";
+ document.getElementById("overlay").style.display="flex";
+};
+
 reset();
+connect();
 })();
-</script></body></html>
+</script>
+</body>
+</html>
